@@ -9,9 +9,10 @@ import assets.floor as floor
 import assets.character as character
 import assets.enemy as enemy
 import assets.loottables as loottables
+import assets.sound as sound
+import assets.art as art
 
 pygame.init()
-
 
 utils.clear()
 print("#=== /// TERMINUS RPG \\\\\ ===#")
@@ -61,6 +62,7 @@ while player.hp > 0:
     print(utils.azure("What will you do?"))
     print("1 = Go to next room | 2 = Inventory")
     choice = str(input("> "))
+    sound.play_sound("sounds/blipSelect.wav")
 
     if choice == "exit":
         exit()
@@ -109,7 +111,7 @@ while player.hp > 0:
                 
 
                 if choice == "1":
-
+                    sound.play_sound("sounds/hitHurt.wav")
                     dealtDMG = equippedWeapon.dmg * player.dmgMult
                     opponent.hp -= dealtDMG
                     print(f"\nYou've dealt {utils.red(dealtDMG)} DMG.")
@@ -148,17 +150,7 @@ while player.hp > 0:
             utils.clear()
 
             #chest frame1
-            print(r"""
-    -Enter to open-
-                  
-
-      ..-------..
-     //         \\
-    ||====.-.====||
-    ||   <=O=>   ||
-    ||____'-'____||
-    '-------------'
-            """)
+            print(art.chest_closed)
             
             loot = random.choices(list(loottables.chestLootTable.keys()), weights=list(loottables.chestLootTable.values()), k=1)[0]
             input()
@@ -166,17 +158,7 @@ while player.hp > 0:
             utils.clear()
             
             #chest frame2
-            print(r"""
-      .=='''''==.
-      ||       || 
-      ||       ||
-      ||_______||  
-     .'|       |'.
-    ||====.-.====||
-    ||   <=O=>   ||
-    ||____'-'____||
-    '-------------'           
-            """)
+            print(art.chest_open)
             print(f"You found: {loot.name}")
             for i in range(len(player.inventory)):
                         if player.inventory[i] == "Empty":

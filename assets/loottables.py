@@ -12,6 +12,6 @@ chestLootTable = {
     greatsword: 5,
     new_magic_wand: 5,
     giant_hammer: 5,
-    small_pocket: 90,
-    big_pocket: 90
+    small_pocket: 10,
+    big_pocket: 5
 }

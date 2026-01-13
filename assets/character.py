@@ -25,7 +25,7 @@ class Player:
     
     def inventoryOpen(self):
         import assets.utilities as utils
-        print(utils.white("\n#*=== /// INVENTORY \\\\\ ===*#"))
+        print(utils.white(r"\n#*=== /// INVENTORY \\\\\ ===*#"))
         for i in range(self.invSize):
             item = self.inventory[i]
             if item == "Empty":
