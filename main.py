@@ -1,254 +1,34 @@
 #Made by Daniel Čech
 
-import random, os, sys, time
+import random, os, sys, time, pygame
 
-class player:
-    def __init__(self,hp,maxHp,coins,dmgMult,mana,maxMana,inventory,invSize):
-        self.hp = hp
-        self.maxHp = maxHp
-        self.coins = coins
-        self.dmgMult = dmgMult
-        self.mana = mana
-        self.maxMana = maxMana
-        self.inventory = inventory
-        self.invSize = invSize
+import assets.utilities as utils
+import assets.weapon as weapon
+import assets.consumable as consumable
+import assets.floor as floor
+import assets.character as character
+import assets.enemy as enemy
+import assets.loottables as loottables
 
-class weapon:
-    def __init__(self,name,dmg,cost,info,tag):
-        self.name = azure(name)
-        self.dmg = dmg
-        self.cost = yellow(cost)
-        self.info = blue(info)
-        self.tag = tag
-
-class consumable:
-    def __init__(self,name,effect,cost,info,trigger,tag):
-        self.name = azure(name)
-        self.effect = green(effect)
-        self.cost = yellow(cost)
-        self.info = red(info)
-        self.trigger = trigger
-        self.tag = tag
-
-class enemy:
-    def __init__(self,name,hp,maxHp,dmg,loot):
-        self.name = name
-        self.hp = hp
-        self.maxHp = maxHp
-        self.dmg = dmg
-        self.loot = loot
-
-    def __str__(self):
-        return self.name
-
-#=== /// TEXT COLOR /// ===#
-def black(a):
-    return (f"\033[30m{a}\033[0m")
-def red(a):
-    return (f"\033[31m{a}\033[0m")
-def green(a):
-    return (f"\033[32m{a}\033[0m")
-def yellow(a):
-    return (f"\033[33m{a}\033[0m")
-def blue(a):
-    return (f"\033[34m{a}\033[0m")
-def purple(a):
-    return (f"\033[35m{a}\033[0m")
-def azure(a):
-    return (f"\033[36m{a}\033[0m")
-def white(a):
-    return (f"\033[37m{a}\033[0m")
-
-#=== /// TEXT BACKGROUND COLOR /// ===#
-def blackbg(a):
-    return (f"\033[40m{a}\033[0m")
-def redbg(a):
-    return (f"\033[41m{a}\033[0m")
-def greenbg(a):
-    return (f"\033[42m{a}\033[0m")
-def yellowbg(a):
-    return (f"\033[43m{a}\033[0m")
-def bluebg(a):
-    return (f"\033[44m{a}\033[0m")
-def purplebg(a):
-    return (f"\033[45m{a}\033[0m")
-def azurebg(a):
-    return (f"\033[46m{a}\033[0m")
-def whitebg(a):
-    return (f"\033[47m{a}\033[0m")
-
-#Heals the player for the set value.
-def playerHeal(n):
-    player.hp += n
-
-#Increases the players AP by the set value.
-def manaUp(n):
-    player.mana += n
-
-#Increases the players inv size by the set value.
-def invUp(n):
-    player.invSize += n
-    for _ in range(n):
-        player.inventory.append("Empty")
-
-def clear_terminal():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-#Draws out inventory slots
-def inventoryOpen():
-    print(white("\n#*=== /// INVENTORY \\\\\ ===*#"))
-    for i in range(player.invSize):
-        item = player.inventory[i]
-        if item == "Empty":
-            print(f"Slot {i+1}:", white("Empty"))
-        else:
-            print(f"Slot {i+1}:", item.name)
-
-#Make sures the stats don't surpass their maximum value
-def maxStatCheck():
-    if player.hp > player.maxHp:
-        player.hp = player.maxHp
-    if player.mana > player.maxMana:
-        player.mana = player.maxMana
-
-#draws a loading bar based lasting n seconds
-def wait(n):
-    anim = ["[-----]","[#----]","[##---]","[###--]","[####-]","[#####]",]
-    for _ in range(1):
-        for frame in anim:
-            sys.stdout.write(f"\r{frame}")
-            sys.stdout.flush()
-            time.sleep(n/6)
-    sys.stdout.write(f"   ")
-    sys.stdout.flush()
-    clear_terminal()
-
-#=== /// WEAPONS \\\ ===#
-#Name, DMG, Cost, Info
-rusty_sword = weapon("Rusty Sword",14,50,"Old, rusty sword, Better than nothing.","weapon")
-giant_hammer = weapon("Giant Hammer",31,89,"Giant sledgehammer weighing atleast for washing machines.","weapon")
-old_pickaxe = weapon("Old Pickaxe",20,30,"An old pickaxe used by slaves in the Educanet corp.","weapon")
-greatsword = weapon("Greatsword",28,68,"And old sword once used by the order of Dušek.","weapon")
-empty_gun = weapon("Empty Gun",10,95,"An old gun once used by the nefarious Wisman gang.","weapon")
-new_magic_wand = weapon("New Magic Wand",21,43,"I saw a photo you looked joyous...","weapon")
-long_bow = weapon("Long Bow",20,54,"A wooden long bow handcrafted by unpaid Temu workers.","weapon")
-#fencing_sword
-#greed_dagger - gives coins after every hit
-#vampire_blade - heals after every hit
-#iron_fists
-#battle_axe
-#fish
-#crystal_saber
-#hell_fork
-#shadow_edge - 2x dmg in Atrium
-#star_splitter
+pygame.init()
 
 
-#=== /// CONSUMABLES \\\ ===#
-#Name, Effect, Cost, Info, Trigger (the assigned function)
-lesser_heal_pot = consumable("Lesser Healing Potion","Heals the player for +20 HP.",35,"Consists mostly of Red40.",lambda: playerHeal(20),"consum")
-great_heal_pot = consumable("Great Healing Potion","Heals the player for +42 HP",50,"Tastes like skittles and oil... and Red40.", lambda: playerHeal(42),"consum")
-lesser_mana_pot = consumable("Lesser Mana Potion","Gives the player +2 Mana",42,"Smells like mouthwash.", lambda: manaUp(2),"consum")
-great_mana_pot = consumable("Great Mana Potion","Gives the player +5 Mana",73,"Tastes like toothpaste with orange juice.", lambda: manaUp(5),"consum")
-#lesser_crit_pot
-#great_crit_pot
-#lesser_regen_pot
-#great_regen_pot
-small_pocket = consumable("Small Pocket","Adds +1 inventory slot",84,"The knitting is pretty sloppy", lambda: invUp(1),"consum")
-big_pocket = consumable("Big Pocket","Adds +2 inventory slot",84,"You could fit a chair in that", lambda: invUp(2),"consum")
-
-
-#=== /// ENEMIES \\\ ===#
-#Name, HP, MaxHP, DMG, Loot
-
-#Basic enemies
-goblin = enemy("Goblin",45,45,6,21)
-skeleton = enemy("Skeleton",25,25,7,11)
-brute = enemy("Brute",68,68,9,20)
-wisman_gang_member = enemy("Wisman Gang Member", 40,40,9,30)
-dusek_cultist = enemy("Order of Dušek Cultist",64,64,10,24)
-gurt = enemy("Gurt",30,30,4,6)
-
-
-#Mini-Bosses
-matyas_janousek = enemy("Matyáš Janoušek",100,100,18,121)
-moto_moto = enemy("Moto Moto",135,135,8,4)
-dusek_acolyte = enemy("Order of Dušek Acolyte",114,114,17,130)
-
-#Bosses
-meat_wall = enemy("Meat Wall",187,187,4,217)
-
-#Weapon IDs
-weapons = {
-    1: rusty_sword,
-    2: giant_hammer,
-    3: old_pickaxe,
-    4: greatsword,
-    5: empty_gun,
-    6: new_magic_wand,
-    7: long_bow
-}
-#Consumable IDs
-consumables = {
-    1: lesser_heal_pot,
-    2: great_heal_pot,
-    3: lesser_mana_pot,
-    4: great_mana_pot
-}
-#Enemy IDs
-enemies = {
-    1: goblin,
-    2: skeleton,
-    3: brute,
-    4: brute,
-    5: dusek_cultist,
-    6: gurt,
-    7: matyas_janousek,
-    8: moto_moto,
-    9: dusek_acolyte,
-}
-
-floors = {
-    1: "Basement",
-    2: "Catacombs",
-    3: "Labyrinth",
-    4: "Atrium",
-}
-
-floorLootTable = {
-    floors[1] 
-}
-
-
-chestLootTable = {
-    empty_gun: 10,
-    lesser_heal_pot: 25,
-    great_heal_pot: 15,
-    lesser_mana_pot: 20,
-    great_mana_pot: 5,
-    old_pickaxe: 5,
-    greatsword: 5,
-    new_magic_wand: 5,
-    giant_hammer: 5,
-    small_pocket: 5
-}
-
-clear_terminal()
-
+utils.clear()
 print("#=== /// TERMINUS RPG \\\\\ ===#")
 input("> ")
-clear_terminal()
+utils.clear()
 nameSet = False
 
+# Setting your name
 while nameSet == False:
-    clear_terminal()
-    print(azure("Who are you..."))
+    utils.clear()
+    print(utils.azure("Who are you..."))
     username = input("> ")
 
-    clear_terminal()
+    utils.clear()
     if username == "":
         username = "Unknown"
-    print(azure(f"Are you sure? -"),green(username))
+    print(utils.azure(f"Are you sure? -"),utils.green(username))
     print("0 = No")
     print("1 = Yes")
     choice = str(input("> "))
@@ -258,37 +38,27 @@ while nameSet == False:
     elif choice == "0":
         continue
     else:
-        print(red("Invalid input!"))
+        print(utils.red("Invalid input!"))
         input()
 
+player = character.Player(100, 100, 0, 1, 0, 5, 5)
 
-player.hp = 100
-player.maxHp = player.hp
-player.coins = 0
-player.dmgMult = 1
-player.mana = 0
-player.maxMana = 5
-player.invSize = 5
-player.inventory = []
-for i in range(player.invSize):
-    player.inventory.append("Empty")
-
-equippedWeapon = weapons[1]
-equippedConsum = consumables[2]
+equippedWeapon = weapon.weapons[1]
+equippedConsum = consumable.consumables[2]
 roomsCleared = 0
-currentFloor = floors[1]
-clear_terminal()
+currentFloor = floor.floors[1]
+utils.clear()
 
 #=== /// MAIN GAMEPLAY LOOP \\\ ===#
 while player.hp > 0:
     print(f"Floor: {currentFloor}\n")
-    print(f"HP: {green(player.hp)}/{green(player.maxHp)}")
-    print(f"Mana: {blue(player.mana)}/{blue(player.maxMana)}")
-    print(f"Rooms cleared:",azure(roomsCleared))
-    print(f"Gold:",yellow(player.coins))
-    print(f"Equipped weapon: {equippedWeapon.name} - {red(f"{equippedWeapon.dmg} DMG")}")
+    print(f"HP: {utils.green(player.hp)}/{utils.green(player.maxHp)}")
+    print(f"Mana: {utils.blue(player.mana)}/{utils.blue(player.maxMana)}")
+    print(f"Rooms cleared:",utils.azure(roomsCleared))
+    print(f"Gold:",utils.yellow(player.coins))
+    print(f"Equipped weapon: {equippedWeapon.name} - {utils.red(f"{equippedWeapon.dmg} DMG")}")
     print("＿＿＿＿＿＿＿＿＿＿\n")
-    print(azure("What will you do?"))
+    print(utils.azure("What will you do?"))
     print("1 = Go to next room | 2 = Inventory")
     choice = str(input("> "))
 
@@ -297,9 +67,9 @@ while player.hp > 0:
 
     #Entering the next room
     if choice == "1":
-        clear_terminal()
-        wait(1)
-        clear_terminal()
+        utils.clear()
+        utils.wait(1)
+        utils.clear()
 
         #Chooses the room type
         
@@ -308,24 +78,24 @@ while player.hp > 0:
         if roomType == 1:
             coinRoom = random.randint(1,5)
             if coinRoom in (1,2,3,4):
-                print(azure(f"Just an empty room."))
+                print(utils.azure(f"Just an empty room."))
                 roomsCleared += 1
             else:
-                print(azure(f"Empty room with a handful of coins on the floor."))
+                print(utils.azure(f"Empty room with a handful of coins on the floor."))
                 receivedCoins = random.randint(5,16)
                 player.coins += receivedCoins
-                print(yellow(f"+{receivedCoins} coins."))
+                print(utils.yellow(f"+{receivedCoins} coins."))
                 roomsCleared += 1
             input()
         elif roomType == 2:
-            print(red("There's an enemy blocking the way!"))
+            print(utils.red("There's an enemy blocking the way!"))
             input()
             
 
             #Battle Loop
-            opponent = enemies[random.randint(1,2)]
+            opponent = enemy.enemies[random.randint(1,2)]
             opponent.hp = opponent.maxHp
-            clear_terminal()
+            utils.clear()
         
             while player.hp > 0 and opponent.hp > 0:
                 print(f"{username}'s HP: {player.hp}/{player.maxHp}")
@@ -333,7 +103,7 @@ while player.hp > 0:
 
                 #Player Turn
                 print("#=== /// PLAYER TURN \\\\\ ===#\n")
-                print(azure("What will you do?"))
+                print(utils.azure("What will you do?"))
                 print("1 = Attack | 2 = Inventory")
                 choice = str(input("> "))
                 
@@ -342,7 +112,7 @@ while player.hp > 0:
 
                     dealtDMG = equippedWeapon.dmg * player.dmgMult
                     opponent.hp -= dealtDMG
-                    print(f"\nYou've dealt {red(dealtDMG)} DMG.")
+                    print(f"\nYou've dealt {utils.red(dealtDMG)} DMG.")
                     
 
                     #Enemy Turn
@@ -355,17 +125,17 @@ while player.hp > 0:
                     else:
                         print("The enemy died before it could attack back.")
                 else:
-                    print(red("Invalid input!"))
+                    print(utils.red("Invalid input!"))
                 input()
 
-                clear_terminal()
+                utils.clear()
             if player.hp > 0:
                 
-                print(yellow("You won!"))
+                print(utils.yellow("You won!"))
                 player.coins += opponent.loot
                 roomsCleared += 1
             elif player.hp < 0:
-                print(red("You lost!"))
+                print(utils.red("You lost!"))
             
             player.mana += 1
             if player.mana > player.maxMana:
@@ -373,9 +143,9 @@ while player.hp > 0:
             input()
             
         elif roomType == 3:
-            print(yellow("You found a treasure a chest!"))
+            print(utils.yellow("You found a treasure a chest!"))
             input()
-            clear_terminal()
+            utils.clear()
 
             #chest frame1
             print(r"""
@@ -390,10 +160,10 @@ while player.hp > 0:
     '-------------'
             """)
             
-            loot = random.choices(list(chestLootTable.keys()), weights=list(chestLootTable.values()), k=1)[0]
+            loot = random.choices(list(loottables.chestLootTable.keys()), weights=list(loottables.chestLootTable.values()), k=1)[0]
             input()
-            wait(0.5)
-            clear_terminal()
+            utils.wait(0.5)
+            utils.clear()
             
             #chest frame2
             print(r"""
@@ -420,9 +190,9 @@ while player.hp > 0:
     elif choice == "2":
         invOpen = True
         while invOpen == True:
-            clear_terminal()
-            inventoryOpen()
-            print(azure("\nWhat will you do?"))
+            utils.clear()
+            player.inventoryOpen()
+            print(utils.azure("\nWhat will you do?"))
             print("1 = Back | 2 = Manage Inventory")
             choice = str(input("> "))
 
@@ -432,15 +202,15 @@ while player.hp > 0:
 
             #Manage Inv
             elif choice == "2":
-                clear_terminal()
-                inventoryOpen()
+                utils.clear()
+                player.inventoryOpen()
 
                 slotSelected = False
                 invSlotAmount = len(player.inventory)
-                print(azure("\nSelect slot number:"))
+                print(utils.azure("\nSelect slot number:"))
                 choice = str(input("> "))
                 if choice == "":
-                    print(red("Invalid input!"))
+                    print(utils.red("Invalid input!"))
                     input()
                     continue
 
@@ -456,9 +226,9 @@ while player.hp > 0:
 
                     #WEAPON
                     if selectedItem.tag == "weapon":
-                        print(red(f"{selectedItem.dmg} DMG"))
-                        print(f"{red(selectedItem.info)}")
-                        print(azure("\nWhat will you do?"))
+                        print(utils.red(f"{selectedItem.dmg} DMG"))
+                        print(f"{utils.red(selectedItem.info)}")
+                        print(utils.azure("\nWhat will you do?"))
                         print("1 = Back | 2 = Equip | 3 = Toss")
 
                         choice = str(input("> "))
@@ -478,7 +248,7 @@ while player.hp > 0:
                             elif choice == "2":
                                 continue
                             else:
-                                print(red("Invalid Input!"))
+                                print(utils.red("Invalid Input!"))
                                 input()
                             
 
@@ -487,15 +257,15 @@ while player.hp > 0:
                     elif selectedItem.tag == "consum":
                         print(f"{selectedItem.effect}")
                         print(f"{selectedItem.info}")
-                        print(azure("\nWhat will you do?"))
+                        print(utils.azure("\nWhat will you do?"))
                         print("1 = Back | 2 = Use | 3 = Toss")
                         choice = str(input("> "))
 
                         if choice == "1":
                             continue
                         elif choice == "2":
-                            selectedItem.trigger()
-                            maxStatCheck()
+                            selectedItem.trigger(player)
+                            player.maxStatCheck()
                             player.inventory[chosenIndex] = "Empty"
                         elif choice == "3":
                             print(f"\nAre you sure you want to throw {player.inventory[chosenIndex].name} away?")
@@ -506,16 +276,16 @@ while player.hp > 0:
                             elif choice == "2":
                                 continue
                             else:
-                                print(red("Invalid Input!"))
+                                print(utils.red("Invalid Input!"))
                                 input()
 
             else:
-                print(red("Invalid Input!"))
+                print(utils.red("Invalid Input!"))
                 input()
     else:
-        print(red("Invalid input!"))
+        print(utils.red("Invalid input!"))
         input()
-    clear_terminal()
+    utils.clear()
 
 #-- TO-DO LIST --
 #   Add new floors
