@@ -1,7 +1,7 @@
 ---
 
 # TerminusRPG (WIP)
-A simple Dungeon Crawling game with RPG elements made in Python running in your terminal.
+A simple Dungeon Crawling game with RPG elements made in Python running in your terminal. It also uses PyGame for the sound effects.
 
 
 ---
@@ -22,11 +22,3 @@ A simple Dungeon Crawling game with RPG elements made in Python running in your 
   - Passive effects.
   - Dealmaker.
   - ASCII art scenery.
-  
- 
- 
- 
- 
- 
-
-🔨🐢
