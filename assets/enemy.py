@@ -1,5 +1,5 @@
 class Enemy:
-    def __init__(self,name,hp,maxHp,dmg,loot):
+    def __init__(self,name,hp,maxHp,dmg,loot,isBoss=False,bossLoot=None):
         self.name = name
         self.hp = hp
         self.maxHp = maxHp

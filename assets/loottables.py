@@ -15,3 +15,5 @@ chestLootTable = {
     small_pocket: 10,
     big_pocket: 5
 }
+
+LootTable_meatWall = {}

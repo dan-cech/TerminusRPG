@@ -1,12 +1,13 @@
 import assets.utilities as utils
 
 class weapon:  
-    def __init__(self,name,dmg,cost,info,tag):
+    def __init__(self,name,dmg,cost,info,tag, stackable=False):
         self.name = utils.azure(name)
         self.dmg = dmg
         self.cost = utils.yellow(cost)
         self.info = utils.blue(info)
         self.tag = tag
+        self.stackable = stackable
 
 #=== /// WEAPONS \\\ ===#
 #Name, DMG, Cost, Info

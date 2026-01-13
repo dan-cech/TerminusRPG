@@ -2,13 +2,14 @@ import assets.utilities as utils
 import assets.character as character
 
 class consumable:
-    def __init__(self,name,effect,cost,info,trigger,tag):
+    def __init__(self,name,effect,cost,info,trigger,tag, stackable=True):
         self.name = utils.azure(name)
         self.effect = utils.green(effect)
         self.cost = utils.yellow(cost)
         self.info = utils.red(info)
         self.trigger = trigger
         self.tag = tag
+        self.stackable = stackable
 
 #=== /// CONSUMABLES \\\ ===#
 #Name, Effect, Cost, Info, Trigger (the assigned function)

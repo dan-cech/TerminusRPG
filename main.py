@@ -160,10 +160,9 @@ while player.hp > 0:
             #chest frame2
             print(art.chest_open)
             print(f"You found: {loot.name}")
-            for i in range(len(player.inventory)):
-                        if player.inventory[i] == "Empty":
-                            player.inventory[i] = loot
-                            break
+        added = player.add_item(loot, amount=1)
+        if not added:
+            print(utils.red("Your inventory is full! Cannot pick up the item."))
 
             roomsCleared += 1
             input()
@@ -188,7 +187,6 @@ while player.hp > 0:
                 player.inventoryOpen()
 
                 slotSelected = False
-                invSlotAmount = len(player.inventory)
                 print(utils.azure("\nSelect slot number:"))
                 choice = str(input("> "))
                 if choice == "":
